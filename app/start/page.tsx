@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { flows } from "@/lib/visa";
+import { availableFlows } from "@/lib/checklist-service";
+import { rulesMode } from "@/lib/config";
+
+// Effective dates can change which flows are available without a redeploy.
+export const revalidate = 3600;
 
 export default function StartPage() {
+  const flows = availableFlows();
+
   return (
     <main className="min-h-screen pb-16">
       <header className="vr-shell flex items-center justify-between py-5">
@@ -22,6 +28,12 @@ export default function StartPage() {
         <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
           Start with the exact immigration action. We’ll keep the rest of the flow focused on what can actually change your checklist.
         </p>
+
+        {flows.length === 0 && (
+          <div className="mt-10 rounded-[1.5rem] border border-slate-200 bg-white p-6 text-slate-600">
+            No visa flow has a verified checklist yet. Please check back soon.
+          </div>
+        )}
 
         <div className="mt-10 grid gap-4">
           {flows.map((flow, index) => (
@@ -44,9 +56,11 @@ export default function StartPage() {
           ))}
         </div>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-          Current MVP flows use demo requirement data until each rule is mapped to an official Korean immigration source.
-        </div>
+        {rulesMode === "preview" && (
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+            Preview mode: flows without a verified rule set are shown with provisional requirements until each rule is mapped to an official Korean immigration source.
+          </div>
+        )}
       </section>
     </main>
   );

@@ -27,13 +27,20 @@ Landing → visa flow selection → contextual questionnaire → deterministic c
 
 Current requirement records are intentionally marked **demo / unverified**. They must not be represented as official filing requirements until they are mapped to verified Korean immigration sources.
 
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md): module boundaries, rules domain, decisions, quality gates
+- [Backlog](docs/BACKLOG.md): prioritised MVP tasks with acceptance criteria
+
 ## Core architecture rule
 
 AI is not the source of truth for immigration requirements.
 
 Checklist generation is deterministic:
 
-User answers → rules engine → canonical requirement IDs → localized presentation.
+User answers → versioned rule set → rules engine → checklist snapshot (pinned to the rule set version) → localized presentation.
+
+The rules domain lives in `lib/rules/` and is framework-free. Production mode (`NEXT_PUBLIC_RULES_MODE=production`) only serves verified, currently effective rule sets; preview mode also serves drafts and labels the checklist as provisional.
 
 AI may later explain or translate verified requirements, but it must not invent eligibility rules, deadlines, fees, or required documents.
 
@@ -49,7 +56,7 @@ AI may later explain or translate verified requirements, but it must not invent 
 ## Local development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -57,11 +64,19 @@ Then open `http://localhost:3000`.
 
 ## Quality checks
 
+Requires Node 22.12+ (CI uses the version in `.nvmrc`).
+
 ```bash
-npm run typecheck
-npm run lint
+npm run typecheck   # strict TypeScript
+npm run lint        # zero warnings, rules-domain import boundary
+npm test            # Vitest unit tests
 npm run build
+npm run test:e2e    # Playwright against the production build (run after build)
+npm run check       # typecheck + lint + test + build
 ```
+
+For E2E, install the browser once with `npx playwright install chromium`, or point
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE` at an existing Chromium.
 
 ## Environment
 
