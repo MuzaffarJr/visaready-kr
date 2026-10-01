@@ -10,15 +10,20 @@ test("landing to checklist happy path", async ({ page }) => {
 
   const generate = page.getByRole("button", { name: /Generate checklist/ });
   await expect(generate).toBeDisabled();
+  await page.getByRole("button", { name: /A degree course/ }).click();
+  await expect(generate).toBeDisabled();
   await page.getByRole("button", { name: /^Yes/ }).click();
   await generate.click();
 
   await expect(page.getByRole("heading", { name: "Prepare these documents" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Address Change Supporting Document" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Certificate of Enrollment" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Supervisor's Recommendation" })).toBeVisible();
+  await expect(page.getByText("₩60,000")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Gov24/ }).first()).toHaveAttribute("href", /gov\.kr/);
   await expect(page.getByText(/Provisional checklist/)).toBeVisible();
 
   await page.getByRole("button", { name: "Mark Passport ready" }).click();
-  await expect(page.getByText(/1 of 7 ready/)).toBeVisible();
+  await expect(page.getByText(/1 of 8 ready/)).toBeVisible();
 });
 
 test("conditional requirement is omitted when it does not apply", async ({ page }) => {

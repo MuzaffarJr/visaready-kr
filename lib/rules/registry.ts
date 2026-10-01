@@ -1,5 +1,6 @@
 import { d10ExtensionV1 } from "./data/d10-extension";
 import { d2ExtensionV1 } from "./data/d2-extension";
+import { d2ExtensionV2 } from "./data/d2-extension-v2";
 import { d2ToD10V1 } from "./data/d2-to-d10";
 import type { FlowDefinition, FlowId, RuleSet } from "./types";
 
@@ -10,7 +11,7 @@ export const flows: readonly FlowDefinition[] = [
 ];
 
 /** Every published version of every flow. Append new versions; never edit old ones. */
-export const ruleSets: readonly RuleSet[] = [d2ExtensionV1, d2ToD10V1, d10ExtensionV1];
+export const ruleSets: readonly RuleSet[] = [d2ExtensionV1, d2ExtensionV2, d2ToD10V1, d10ExtensionV1];
 
 export function findFlow(id: string | null | undefined): FlowDefinition | undefined {
   return flows.find((flow) => flow.id === id);
