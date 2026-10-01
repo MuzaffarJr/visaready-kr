@@ -17,14 +17,75 @@ export function loadChecklist(flowId: FlowId): SavedChecklist | undefined {
   try {
     const raw = window.localStorage.getItem(key(flowId));
     if (!raw) return undefined;
-    const parsed = JSON.parse(raw) as Partial<SavedChecklist>;
-    if (parsed.v !== 1 || parsed.snapshot?.flowId !== flowId || !Array.isArray(parsed.snapshot.items)) {
-      return undefined;
-    }
-    return { v: 1, snapshot: parsed.snapshot, ready: parsed.ready ?? {} };
+    return parseSavedChecklist(JSON.parse(raw), flowId);
   } catch {
     return undefined;
   }
+}
+
+type Json = Record<string, unknown>;
+
+const isObject = (value: unknown): value is Json =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const isString = (value: unknown): value is string => typeof value === "string";
+
+function isSource(value: unknown): boolean {
+  return (
+    isObject(value) &&
+    isString(value.id) &&
+    isString(value.title) &&
+    isString(value.url) &&
+    value.url.startsWith("https://")
+  );
+}
+
+const hasSources = (value: Json) => Array.isArray(value.sources) && value.sources.every(isSource);
+
+function isItem(value: unknown): boolean {
+  return (
+    isObject(value) &&
+    isString(value.requirementId) &&
+    isString(value.koreanName) &&
+    isString(value.englishName) &&
+    isString(value.kind) &&
+    isString(value.note) &&
+    hasSources(value)
+  );
+}
+
+function isFee(value: unknown): boolean {
+  return (
+    isObject(value) &&
+    isString(value.id) &&
+    isString(value.label) &&
+    typeof value.amountKrw === "number" &&
+    hasSources(value)
+  );
+}
+
+/**
+ * Storage is user-controlled, so a record is only trusted when every field
+ * the checklist page reads has the expected shape. Anything else is treated
+ * as missing and the checklist is generated fresh.
+ */
+export function parseSavedChecklist(value: unknown, flowId: FlowId): SavedChecklist | undefined {
+  if (!isObject(value) || value.v !== 1) return undefined;
+  const { snapshot, ready = {} } = value;
+  if (
+    !isObject(snapshot) ||
+    snapshot.flowId !== flowId ||
+    typeof snapshot.ruleSetVersion !== "number" ||
+    typeof snapshot.provisional !== "boolean" ||
+    !isObject(snapshot.answers) ||
+    !Array.isArray(snapshot.items) ||
+    !snapshot.items.every(isItem) ||
+    !Array.isArray(snapshot.fees) ||
+    !snapshot.fees.every(isFee)
+  ) {
+    return undefined;
+  }
+  if (!isObject(ready) || !Object.values(ready).every((v) => typeof v === "boolean")) return undefined;
+  return { v: 1, snapshot: snapshot as ChecklistSnapshot, ready: ready as Record<string, boolean> };
 }
 
 export function saveChecklist(flowId: FlowId, saved: Omit<SavedChecklist, "v">): void {
