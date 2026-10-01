@@ -3,36 +3,51 @@ import { flows } from "@/lib/visa";
 
 export default function StartPage() {
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-5 py-10 md:py-16">
-      <Link href="/" className="text-sm text-slate-500">
-        ← VisaReady KR
-      </Link>
+    <main className="min-h-screen pb-16">
+      <header className="vr-shell flex items-center justify-between py-5">
+        <Link href="/" className="flex items-center gap-3 font-semibold">
+          <span className="grid size-9 place-items-center rounded-xl bg-slate-950 text-sm font-bold text-white">V</span>
+          VisaReady KR
+        </Link>
+        <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500">
+          Step 1 of 2
+        </span>
+      </header>
 
-      <div className="mt-10">
-        <p className="text-sm font-semibold text-blue-600">Step 1 of 2</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+      <section className="mx-auto max-w-3xl px-5 pt-12 sm:pt-20">
+        <div className="mb-3 text-sm font-semibold text-blue-600">Choose a visa action</div>
+        <h1 className="max-w-2xl text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
           What are you preparing for?
         </h1>
-        <p className="mt-3 text-slate-600">
-          Choose one visa action. We’ll only show questions relevant to that
-          flow.
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+          Start with the exact immigration action. We’ll keep the rest of the flow focused on what can actually change your checklist.
         </p>
-      </div>
 
-      <div className="mt-8 grid gap-3">
-        {flows.map((flow) => (
-          <Link
-            key={flow.id}
-            href={"/questionnaire?flow=" + flow.id}
-            className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-sm"
-          >
-            <div className="font-semibold">{flow.label}</div>
-            <div className="mt-1 text-sm leading-6 text-slate-600">
-              {flow.description}
-            </div>
-          </Link>
-        ))}
-      </div>
+        <div className="mt-10 grid gap-4">
+          {flows.map((flow, index) => (
+            <Link
+              key={flow.id}
+              href={"/questionnaire?flow=" + flow.id}
+              className="group flex items-center justify-between gap-5 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,.04)] hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_18px_45px_rgba(15,23,42,.08)] sm:p-6"
+            >
+              <div className="flex min-w-0 items-start gap-4">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-slate-950 text-sm font-semibold text-white">
+                  0{index + 1}
+                </span>
+                <div>
+                  <div className="text-lg font-semibold tracking-tight">{flow.label}</div>
+                  <div className="mt-1 text-sm leading-6 text-slate-600">{flow.description}</div>
+                </div>
+              </div>
+              <span className="grid size-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 group-hover:border-blue-200 group-hover:bg-blue-50 group-hover:text-blue-700">→</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+          Current MVP flows use demo requirement data until each rule is mapped to an official Korean immigration source.
+        </div>
+      </section>
     </main>
   );
 }
