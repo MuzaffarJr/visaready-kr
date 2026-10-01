@@ -33,6 +33,12 @@ create table if not exists public.requirements (
   updated_at timestamptz not null default now()
 );
 
+-- Lets checklist items reference (id, flow_id) so an item can only point at a
+-- requirement of its application's own flow.
+alter table public.requirements
+  drop constraint if exists requirements_id_flow_id_key,
+  add constraint requirements_id_flow_id_key unique (id, flow_id);
+
 create index if not exists requirements_flow_id_idx
   on public.requirements(flow_id);
 
@@ -65,7 +71,8 @@ create table if not exists public.applications (
   status text not null default 'in_progress'
     check (status in ('in_progress', 'ready', 'archived')),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (id, flow_id)
 );
 
 create index if not exists applications_user_id_idx
@@ -80,11 +87,16 @@ create table if not exists public.application_answers (
 );
 
 create table if not exists public.application_checklist_items (
-  application_id uuid not null references public.applications(id) on delete cascade,
-  requirement_id text not null references public.requirements(id),
+  application_id uuid not null,
+  flow_id text not null,
+  requirement_id text not null,
   is_ready boolean not null default false,
   updated_at timestamptz not null default now(),
-  primary key (application_id, requirement_id)
+  primary key (application_id, requirement_id),
+  foreign key (application_id, flow_id)
+    references public.applications(id, flow_id) on delete cascade,
+  foreign key (requirement_id, flow_id)
+    references public.requirements(id, flow_id)
 );
 
 alter table public.visa_flows enable row level security;

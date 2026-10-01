@@ -68,7 +68,10 @@ function Checklist({ params }: { params: URLSearchParams }) {
 
   function acceptUpdate() {
     if (loaded.kind !== "ok" || !latest?.ok) return;
-    const regenerated = generateChecklist(latest.value, loaded.snapshot.answers, new Date().toISOString());
+    // Answers to questions the latest version dropped would fail validation.
+    const known = new Set(latest.value.questions.map((question) => question.id));
+    const answers = Object.fromEntries(Object.entries(loaded.snapshot.answers).filter(([id]) => known.has(id)));
+    const regenerated = generateChecklist(latest.value, answers, new Date().toISOString());
     if (!regenerated.ok) return;
     const kept = new Set(regenerated.value.items.map((item) => item.requirementId));
     const nextReady = Object.fromEntries(Object.entries(loaded.ready).filter(([id]) => kept.has(id)));

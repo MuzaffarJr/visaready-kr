@@ -33,7 +33,7 @@ test("conditional requirement is omitted when it does not apply", async ({ page 
 });
 
 test("invalid answers never produce a checklist", async ({ page }) => {
-  await page.goto("/checklist?flow=d2-extension&addressChanged=maybe");
+  await page.goto("/checklist?flow=d2-extension&studyType=degree&thesisStage=maybe");
   await expect(page.getByText(/answers are missing or invalid/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Prepare these documents" })).toHaveCount(0);
 });
