@@ -24,6 +24,11 @@ describe("parseSavedChecklist", () => {
 
   it.each([
     ["another flow", (r) => Object.assign(r.snapshot, { flowId: "d10-extension" })],
+    ["an unknown rule set status", (r) => Object.assign(r.snapshot, { ruleSetStatus: "approved" })],
+    ["a missing generatedAt", (r) => Object.assign(r.snapshot, { generatedAt: undefined })],
+    ["an unparseable generatedAt", (r) => Object.assign(r.snapshot, { generatedAt: "yesterday" })],
+    ["an object verifiedAt", (r) => Object.assign(r.snapshot, { verifiedAt: {} })],
+    ["a malformed verifiedAt", (r) => Object.assign(r.snapshot, { verifiedAt: "1 Oct 2026" })],
     ["a null item", (r) => Object.assign(r.snapshot.items, { 0: null })],
     ["an item without sources", (r) => Object.assign(r.snapshot.items[0]!, { sources: undefined })],
     ["a non-https source url", (r) => Object.assign(r.snapshot.items[0]!.sources[0]!, { url: "javascript:alert(1)" })],
@@ -34,6 +39,12 @@ describe("parseSavedChecklist", () => {
     const record = clone();
     corrupt(record);
     expect(parseSavedChecklist(record, "d2-extension")).toBeUndefined();
+  });
+
+  it("accepts a verified snapshot with an ISO verifiedAt", () => {
+    const record = clone();
+    Object.assign(record.snapshot, { ruleSetStatus: "verified", verifiedAt: "2026-10-01" });
+    expect(parseSavedChecklist(record, "d2-extension")?.snapshot.verifiedAt).toBe("2026-10-01");
   });
 
   it("rejects non-objects", () => {

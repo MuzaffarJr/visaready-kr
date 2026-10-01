@@ -1,4 +1,4 @@
-import type { Answers, ChecklistSnapshot, FlowId } from "@/lib/rules";
+import { isIsoDate, type Answers, type ChecklistSnapshot, type FlowId, type RuleSetStatus } from "@/lib/rules";
 
 /**
  * Browser-only persistence for one checklist per flow. Storage can be
@@ -24,6 +24,8 @@ export function loadChecklist(flowId: FlowId): SavedChecklist | undefined {
 }
 
 type Json = Record<string, unknown>;
+
+const statuses: readonly RuleSetStatus[] = ["draft", "in_review", "verified", "deprecated"];
 
 const isObject = (value: unknown): value is Json =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -75,6 +77,10 @@ export function parseSavedChecklist(value: unknown, flowId: FlowId): SavedCheckl
     !isObject(snapshot) ||
     snapshot.flowId !== flowId ||
     typeof snapshot.ruleSetVersion !== "number" ||
+    !statuses.includes(snapshot.ruleSetStatus as RuleSetStatus) ||
+    !isString(snapshot.generatedAt) ||
+    Number.isNaN(Date.parse(snapshot.generatedAt)) ||
+    (snapshot.verifiedAt !== undefined && !(isString(snapshot.verifiedAt) && isIsoDate(snapshot.verifiedAt))) ||
     typeof snapshot.provisional !== "boolean" ||
     !isObject(snapshot.answers) ||
     !Array.isArray(snapshot.items) ||
