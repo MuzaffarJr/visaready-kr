@@ -1,29 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f8fa;
+  --bg: #f5f7fb;
   --surface: #ffffff;
-  --text: #101828;
+  --surface-soft: #eef3ff;
+  --text: #0b1220;
   --muted: #667085;
-  --line: #e4e7ec;
+  --line: #dce3ee;
   --accent: #155eef;
+  --accent-strong: #0b4fe6;
   --success: #067647;
+  --warning: #b54708;
+  --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.08);
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
 }
 
 html,
 body {
   margin: 0;
   min-height: 100%;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 85% 0%, rgba(21, 94, 239, 0.08), transparent 28rem),
+    linear-gradient(180deg, #fbfcff 0%, var(--bg) 44%);
   color: var(--text);
 }
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(21, 94, 239, 0.16);
 }
 
 button,
@@ -36,4 +50,67 @@ select {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(21, 94, 239, 0.25);
+  outline-offset: 3px;
+}
+
+.vr-shell {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.vr-grid {
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.vr-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-soft);
+}
+
+.vr-doc {
+  position: relative;
+  overflow: hidden;
+}
+
+.vr-doc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(130deg, transparent 45%, rgba(255,255,255,.72) 55%, transparent 65%);
+  transform: translateX(-120%);
+  animation: sheen 7s ease-in-out infinite;
+}
+
+@keyframes sheen {
+  0%, 75% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
