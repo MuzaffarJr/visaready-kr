@@ -28,6 +28,7 @@ with Korean document names for the immigration office.
 - [x] P0-5 landing copy now matches what exists (no unshipped language claims)
 - [x] P0-7 disclaimer and privacy note in the site footer; checklist shows the verification date or "provisional"
 - [x] P0-8 security headers (CSP, HSTS, frame, referrer, permissions), checked by E2E with a no-console-error happy path
+- [x] P1-2 (pulled forward) local persistence: snapshot + progress in localStorage, resume without answers, "rules updated" banner that never rewrites the checklist until the user accepts; covered by E2E
 - [ ] P0-1 research draft for D-2 extension in `docs/research/d2-extension.md` (needs human review)
 
 ## P0: required before any real user sees a checklist

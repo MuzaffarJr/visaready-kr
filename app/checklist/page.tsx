@@ -1,32 +1,86 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { currentRuleSet } from "@/lib/checklist-service";
-import { findFlow, generateChecklist, parseAnswers } from "@/lib/rules";
+import { loadChecklist, sameAnswers, saveChecklist } from "@/lib/checklist-store";
+import {
+  compareWithLatest,
+  findFlow,
+  generateChecklist,
+  parseAnswers,
+  type ChecklistSnapshot,
+  type FlowId,
+  type SnapshotDrift,
+} from "@/lib/rules";
 
-function Checklist() {
-  const params = useSearchParams();
+type Loaded =
+  | { kind: "ok"; flowId: FlowId; snapshot: ChecklistSnapshot; ready: Record<string, boolean> }
+  | { kind: "invalid-answers"; flowId: FlowId }
+  | { kind: "unavailable" };
+
+/** Resolves what to show: a saved checklist for the same answers, or a fresh one. */
+function load(params: URLSearchParams): Loaded {
   const flow = findFlow(params.get("flow"));
-  const result = useMemo(() => {
-    if (!flow) return undefined;
-    const selected = currentRuleSet(flow.id);
-    if (!selected.ok) return undefined;
-    const answers = parseAnswers(selected.value.questions, (key) => params.get(key));
-    return generateChecklist(selected.value, answers, new Date().toISOString());
-  }, [flow, params]);
-  const snapshot = result?.ok ? result.value : undefined;
+  if (!flow) return { kind: "unavailable" };
+  const selected = currentRuleSet(flow.id);
+  if (!selected.ok) return { kind: "unavailable" };
+
+  const { questions } = selected.value;
+  const answersGiven = questions.some((question) => params.has(question.id));
+  const answers = parseAnswers(questions, (key) => params.get(key));
+  const saved = loadChecklist(flow.id);
+
+  // A saved checklist stays pinned to the rule set version it was made with.
+  if (saved && (!answersGiven || sameAnswers(saved.snapshot.answers, answers))) {
+    return { kind: "ok", flowId: flow.id, snapshot: saved.snapshot, ready: saved.ready };
+  }
+
+  const fresh = generateChecklist(selected.value, answers, new Date().toISOString());
+  if (!fresh.ok) return { kind: "invalid-answers", flowId: flow.id };
+
+  // New answers replace the saved checklist; progress carries over for items that remain.
+  const kept = new Set(fresh.value.items.map((item) => item.requirementId));
+  const ready = Object.fromEntries(Object.entries(saved?.ready ?? {}).filter(([id]) => kept.has(id)));
+  saveChecklist(flow.id, { snapshot: fresh.value, ready });
+  return { kind: "ok", flowId: flow.id, snapshot: fresh.value, ready };
+}
+
+function Checklist({ params }: { params: URLSearchParams }) {
+  const [loaded, setLoaded] = useState<Loaded>(() => load(params));
+  const flow = loaded.kind === "unavailable" ? undefined : findFlow(loaded.flowId);
+  const snapshot = loaded.kind === "ok" ? loaded.snapshot : undefined;
+  const ready = loaded.kind === "ok" ? loaded.ready : {};
   const items = snapshot?.items ?? [];
-  const [ready, setReady] = useState<Record<string, boolean>>({});
   const complete = items.filter((item) => ready[item.requirementId]).length;
   const percent = items.length ? Math.round((complete / items.length) * 100) : 0;
+
+  const latest = flow ? currentRuleSet(flow.id) : undefined;
+  const drift: SnapshotDrift = snapshot && latest?.ok ? compareWithLatest(snapshot, latest.value) : { status: "current" };
+
+  function toggle(requirementId: string) {
+    if (loaded.kind !== "ok") return;
+    const next = { ...loaded.ready, [requirementId]: !loaded.ready[requirementId] };
+    setLoaded({ ...loaded, ready: next });
+    saveChecklist(loaded.flowId, { snapshot: loaded.snapshot, ready: next });
+  }
+
+  function acceptUpdate() {
+    if (loaded.kind !== "ok" || !latest?.ok) return;
+    const regenerated = generateChecklist(latest.value, loaded.snapshot.answers, new Date().toISOString());
+    if (!regenerated.ok) return;
+    const kept = new Set(regenerated.value.items.map((item) => item.requirementId));
+    const nextReady = Object.fromEntries(Object.entries(loaded.ready).filter(([id]) => kept.has(id)));
+    setLoaded({ ...loaded, snapshot: regenerated.value, ready: nextReady });
+    saveChecklist(loaded.flowId, { snapshot: regenerated.value, ready: nextReady });
+  }
 
   if (!flow || !snapshot) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-16">
         <p>
-          {result && !result.ok
+          {loaded.kind === "invalid-answers"
             ? "Some answers are missing or invalid, so the checklist could not be generated."
             : "Checklist could not be generated."}
         </p>
@@ -69,7 +123,7 @@ function Checklist() {
             </div>
 
             <div className="mt-8 border-t border-white/10 pt-5 text-xs leading-5 text-slate-400">
-              Completion is a preparation indicator, not a visa approval prediction.
+              Completion is a preparation indicator, not a visa approval prediction. Progress is saved in this browser only.
             </div>
           </div>
         </aside>
@@ -85,6 +139,28 @@ function Checklist() {
               {snapshot.verifiedAt ? "verified " + snapshot.verifiedAt : "provisional, source verification pending"}
             </div>
           </div>
+
+          {drift.status === "outdated" && (
+            <div role="status" className="mb-5 rounded-[1.4rem] border border-blue-200 bg-blue-50 p-5 text-sm leading-6 text-blue-950">
+              <strong>Rules updated to v{drift.latestVersion}.</strong>{" "}
+              Your checklist still follows v{snapshot.ruleSetVersion}, the version it was created with.{" "}
+              {drift.unansweredQuestions.length > 0 ? (
+                <>
+                  The new rules ask {drift.unansweredQuestions.length} new question(s).{" "}
+                  <Link className="font-semibold underline" href={"/questionnaire?flow=" + snapshot.flowId}>
+                    Answer them to update
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {drift.added.length} item(s) added, {drift.removed.length} removed.{" "}
+                  <button type="button" onClick={acceptUpdate} className="font-semibold underline">
+                    Update my checklist
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="space-y-3">
             {items.map((item, index) => {
@@ -102,7 +178,7 @@ function Checklist() {
                       type="button"
                       aria-label={"Mark " + item.englishName + " ready"}
                       aria-pressed={isReady}
-                      onClick={() => setReady((current) => ({ ...current, [item.requirementId]: !isReady }))}
+                      onClick={() => toggle(item.requirementId)}
                       className={
                         "grid size-11 shrink-0 place-items-center rounded-2xl border font-semibold " +
                         (isReady
@@ -180,6 +256,12 @@ function Checklist() {
   );
 }
 
+function ChecklistRoute() {
+  const params = useSearchParams();
+  // Remount when the query changes so state is re-derived from the new answers.
+  return <Checklist key={params.toString()} params={new URLSearchParams(params.toString())} />;
+}
+
 export default function ChecklistPage() {
-  return <Suspense><Checklist /></Suspense>;
+  return <Suspense><ChecklistRoute /></Suspense>;
 }
