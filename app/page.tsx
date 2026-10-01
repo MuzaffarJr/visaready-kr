@@ -18,9 +18,12 @@ export default function Home() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 sm:inline-flex">
-            Preview
-          </span>
+          <Link
+            href="/law"
+            className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 sm:inline-flex"
+          >
+            Law search
+          </Link>
           <Link
             href="/start"
             className="inline-flex items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 hover:bg-slate-800"

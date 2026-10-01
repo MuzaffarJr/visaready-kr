@@ -6,17 +6,17 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    // The rules domain is the source of truth and must stay framework-free.
-    files: ["lib/rules/**/*.ts"],
+    // Domain modules (rules, law corpus) must stay framework-free.
+    files: ["lib/rules/**/*.ts", "lib/law/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           patterns: [
-            { group: ["react", "react-dom", "react/*"], message: "lib/rules must not depend on React." },
-            { group: ["next", "next/*"], message: "lib/rules must not depend on Next.js." },
-            { group: ["@supabase/*"], message: "lib/rules must not depend on Supabase." },
-            { group: ["@/*"], message: "lib/rules may only import from inside lib/rules." },
+            { group: ["react", "react-dom", "react/*"], message: "Domain modules must not depend on React." },
+            { group: ["next", "next/*"], message: "Domain modules must not depend on Next.js." },
+            { group: ["@supabase/*"], message: "Domain modules must not depend on Supabase." },
+            { group: ["@/*"], message: "Domain modules may only use relative imports." },
           ],
         },
       ],

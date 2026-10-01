@@ -41,6 +41,11 @@ lib/rules/                Rules domain. Framework-free TypeScript.
   registry.ts             Flow catalogue and every published rule set version
   data/                   Rule set data, one file per flow
   __tests__/              Unit tests (Vitest)
+lib/law/                  Statute corpus and search. Framework-free.
+  parse.ts                Splits law.go.kr PDF text exports into articles
+  search.ts               BM25 over Hangul bigrams + English stems, Uzbek glossary, article references
+  data/                   Parsed Immigration Act (ko + en JSON, committed; PDFs are not)
+scripts/ingest-law.ts     PDF → JSON (needs pdftotext)
 e2e/                      Browser tests against the production build (Playwright)
 supabase/schema.sql       Database blueprint (not applied yet, see section 6)
 ```
@@ -131,6 +136,13 @@ builds work offline and in locked-down CI. `turbopack.root` is pinned in
 `next.config.ts` so a stray lockfile in a parent folder cannot change the
 workspace root.
 
+**D6. Law search returns text, not answers.** `/law` retrieves articles of the
+Immigration Act verbatim, in Korean and English, with the act number and
+enforcement date. It never paraphrases or generates legal conclusions. An AI
+answer layer may later summarise retrieved articles, but only with citations
+to the exact text it was given. Uzbek queries are bridged with a glossary
+because the corpus exists only in Korean and English.
+
 ## 5. Quality gates
 
 | Command | Checks |
@@ -158,6 +170,12 @@ and on every pull request.
 - **No persistence.** Progress lives in React state and is lost on refresh.
 - **No i18n.** The landing page advertises EN · VI · 中文 · UZ but only
   English exists.
+- **Law corpus is the 2016 version** (법률 제14106호, enforced 2016-09-30) as
+  supplied. The Act has been amended since, and visa documents and fees live
+  in the Enforcement Decree and Rules (incl. 별표 5의2), which are not loaded.
+- **HiKorea is not ingested.** The build sandbox cannot reach hikorea.go.kr;
+  page snapshots need a fetch from an allowed network, then the same
+  search index can serve them with a retrieval date.
 - **One question per flow.** Real flows need more facts (program type,
   funding, part-time work, prior D-10 duration); which ones is an output of
   source research.

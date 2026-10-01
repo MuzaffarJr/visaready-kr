@@ -31,6 +31,9 @@ with Korean document names for the immigration office.
 - [x] P1-2 (pulled forward) local persistence: snapshot + progress in localStorage, resume without answers, "rules updated" banner that never rewrites the checklist until the user accepts; covered by E2E
 - [x] P0-1 research draft for D-2 extension in `docs/research/d2-extension.md` (fee, legal basis and core documents confirmed from official pages; money-proof amounts and GPA/attendance waivers still unconfirmed)
 - [x] P0-2 D-2 extension v2 encoded from that research as `draft` (9/9 requirements cite sources, KRW 60,000 fee); v1 untouched
+- [x] Law search (`/law`): Immigration Act ko + en, 150 aligned articles, Uzbek/Korean/English queries and article references, verbatim text with version warning
+- [ ] P0-9 load the **current** Immigration Act, Enforcement Decree and Enforcement Rules (with 별표 5의2) from law.go.kr into the law corpus; the supplied PDFs are the 2016 version
+- [ ] P0-10 HiKorea guide snapshots: fetch the relevant 체류민원 pages from an allowed network, store text + retrieval date + content hash, index them next to the law
 - [ ] P0-3 human review: open Annex 5-2 directly, get the current MOJ student guideline and residence-status manual from HiKorea, resolve the conflicts listed in the research note, then promote v2 to `verified`
 
 ## P0: required before any real user sees a checklist
