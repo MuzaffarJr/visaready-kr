@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const proof = [
-  ["4", "Launch languages"],
-  ["3", "MVP visa flows"],
-  ["1", "Canonical rules engine"],
+  ["3", "Visa flows in preview"],
+  ["한 · EN", "Korean and English document names"],
+  ["1", "Deterministic rules engine"],
 ];
 
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
 
         <div className="flex items-center gap-2">
           <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 sm:inline-flex">
-            EN · VI · 中文 · UZ
+            Preview
           </span>
           <Link
             href="/start"
@@ -120,8 +120,8 @@ export default function Home() {
               </div>
 
               <div className="absolute right-4 top-5 rounded-2xl border border-slate-200 bg-slate-950 px-4 py-3 text-white shadow-lg">
-                <div className="text-[11px] uppercase tracking-[.16em] text-slate-400">Languages</div>
-                <div className="mt-1 text-sm font-medium">EN · VI · 中文 · UZ</div>
+                <div className="text-[11px] uppercase tracking-[.16em] text-slate-400">Every document</div>
+                <div className="mt-1 text-sm font-medium">한국어 + English</div>
               </div>
             </div>
           </div>

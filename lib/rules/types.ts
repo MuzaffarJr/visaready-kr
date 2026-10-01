@@ -129,6 +129,8 @@ export type ChecklistSnapshot = {
   ruleSetVersion: number;
   ruleSetStatus: RuleSetStatus;
   provisional: boolean;
+  /** Date a reviewer verified the rule set; absent for unverified rule sets. */
+  verifiedAt?: IsoDate;
   generatedAt: string;
   answers: Answers;
   items: ChecklistItem[];

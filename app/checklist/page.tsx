@@ -81,7 +81,8 @@ function Checklist() {
               <h2 className="mt-1 text-3xl font-semibold tracking-[-0.035em] text-slate-950">Prepare these documents</h2>
             </div>
             <div className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500">
-              Rules v{snapshot.ruleSetVersion} · {snapshot.provisional ? "provisional, source verification pending" : "verified"}
+              Rules v{snapshot.ruleSetVersion} ·{" "}
+              {snapshot.verifiedAt ? "verified " + snapshot.verifiedAt : "provisional, source verification pending"}
             </div>
           </div>
 

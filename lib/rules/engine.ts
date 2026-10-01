@@ -93,6 +93,9 @@ export function generateChecklist(
       ruleSetVersion: ruleSet.version,
       ruleSetStatus: ruleSet.status,
       provisional: ruleSet.status !== "verified",
+      ...(ruleSet.status === "verified" && ruleSet.verification
+        ? { verifiedAt: ruleSet.verification.verifiedAt }
+        : {}),
       generatedAt,
       answers: { ...answers },
       items,

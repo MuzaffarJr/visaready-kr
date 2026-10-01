@@ -65,6 +65,7 @@ describe("generateChecklist", () => {
     if (!result.ok) throw new Error("expected ok");
     expect(result.value.ruleSetVersion).toBe(7);
     expect(result.value.provisional).toBe(false);
+    expect(result.value.verifiedAt).toBe("2026-09-01");
     expect(result.value.items[0]?.sources[0]?.url).toBe("https://www.hikorea.go.kr/");
     expect(result.value.fees).toEqual([
       expect.objectContaining({ id: "extension-fee", amountKrw: 60000 }),
@@ -74,6 +75,7 @@ describe("generateChecklist", () => {
   it("marks draft output as provisional", () => {
     const result = generateChecklist(makeRuleSet({ status: "draft" }), answers, NOW);
     expect(result.ok && result.value.provisional).toBe(true);
+    expect(result.ok && result.value.verifiedAt).toBeUndefined();
   });
 
   it("rejects missing, unknown and mistyped answers", () => {

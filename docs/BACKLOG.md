@@ -22,6 +22,14 @@ with Korean document names for the immigration office.
 - [x] CI on `npm ci` + committed lockfile, Node pinned via `.nvmrc`
 - [x] `turbopack.root` pinned, system font stack (offline builds)
 
+## P0 progress
+
+- [x] P0-4 governance: `CODEOWNERS`, PR template with rule-change checklist, `npm run rules:report` in the CI job summary
+- [x] P0-5 landing copy now matches what exists (no unshipped language claims)
+- [x] P0-7 disclaimer and privacy note in the site footer; checklist shows the verification date or "provisional"
+- [x] P0-8 security headers (CSP, HSTS, frame, referrer, permissions), checked by E2E with a no-console-error happy path
+- [ ] P0-1 research draft for D-2 extension in `docs/research/d2-extension.md` (needs human review)
+
 ## P0: required before any real user sees a checklist
 
 | ID | Task | Size | Acceptance |
