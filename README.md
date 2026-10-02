@@ -10,12 +10,10 @@ Initial flows:
 - D-2 → D-10 status change
 - D-10 visa extension
 
-Initial locales:
+Locales (routes are `/uz/...` and `/en/...`; `/` redirects by the visitor's choice or browser language):
 
-- English
-- Vietnamese
-- Simplified Chinese
-- Uzbek
+- Uzbek (Latin) and English: complete
+- Vietnamese and Simplified Chinese: scaffolded in `lib/i18n`, fall back to English, not routable yet
 
 Korean terminology is stored with every canonical requirement.
 

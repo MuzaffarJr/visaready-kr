@@ -28,7 +28,8 @@ keep the rules core extractable if it ever needs to be served elsewhere
 (mobile app, partner API).
 
 ```
-app/                      UI routes (React, Next.js). Thin: no rule logic.
+app/[locale]/             UI routes under /uz and /en (React, Next.js). Thin: no rule logic.
+proxy.ts                  Redirects locale-less paths to the remembered or browser language.
 lib/checklist-service.ts  Application layer: binds the engine to config + clock.
 lib/config.ts             Runtime configuration (rules mode).
 lib/rules/                Rules domain. Framework-free TypeScript.
@@ -45,6 +46,11 @@ lib/law/                  Statute corpus and search. Framework-free.
   parse.ts                Splits law.go.kr PDF text exports into articles
   search.ts               BM25 over Hangul bigrams + English stems, Uzbek glossary, article references
   data/                   Parsed Immigration Act (ko + en JSON, committed; PDFs are not)
+lib/i18n/                 Locales and catalogues. Framework-free.
+  config.ts               Routable (uz, en) and scaffolded (vi, zh) locales, Accept-Language negotiation
+  messages/               UI copy; en is the reference, uz is type-checked complete
+  rules/                  Rule content translations keyed by flow@version and requirement id
+  index.ts                Lookups with English fallback, missingTranslations / orphanTranslations
 scripts/ingest-law.ts     PDF → JSON (needs pdftotext)
 e2e/                      Browser tests against the production build (Playwright)
 supabase/schema.sql       Database blueprint (not applied yet, see section 6)
@@ -168,8 +174,10 @@ and on every pull request.
   without pinning a rule set version. It must be revised before persistence
   ships (backlog P0-6).
 - **No persistence.** Progress lives in React state and is lost on refresh.
-- **No i18n.** The landing page advertises EN · VI · 中文 · UZ but only
-  English exists.
+- **Vietnamese and Chinese are scaffolded only.** Uzbek and English are
+  complete and routable; vi and zh catalogues exist, fall back to English and
+  stay off the language switcher until a translator fills them (the i18n
+  unit test prints how many keys are left).
 - **Law corpus is the 2016 version** (법률 제14106호, enforced 2016-09-30) as
   supplied. The Act has been amended since, and visa documents and fees live
   in the Enforcement Decree and Rules (incl. 별표 5의2), which are not loaded.
