@@ -1,66 +1,68 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { SiteHeader } from "../_components/site-header";
+import { getMessages, isLocale, localePath } from "@/lib/i18n";
 
-const proof = [
-  ["3", "Visa flows in preview"],
-  ["한 · EN", "Korean and English document names"],
-  ["1", "Deterministic rules engine"],
-];
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const { common, landing: m } = getMessages(locale);
+  const start = localePath(locale, "/start");
 
-export default function Home() {
+  const proof = [
+    [m.proofFlowsValue, m.proofFlows],
+    [m.proofNamesValue, m.proofNames],
+    [m.proofEngineValue, m.proofEngine],
+  ];
+  const steps = [
+    ["01", m.step1Title, m.step1Body],
+    ["02", m.step2Title, m.step2Body],
+    ["03", m.step3Title, m.step3Body],
+  ];
+
   return (
     <main className="min-h-screen overflow-hidden">
-      <header className="vr-shell flex items-center justify-between py-5">
-        <Link href="/" className="flex items-center gap-3 font-semibold tracking-tight">
-          <span className="grid size-9 place-items-center rounded-xl bg-slate-950 text-sm font-bold text-white shadow-sm">
-            V
-          </span>
-          <span>VisaReady KR</span>
+      <SiteHeader locale={locale}>
+        <Link
+          href={localePath(locale, "/law")}
+          className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 sm:inline-flex"
+        >
+          {common.lawSearch}
         </Link>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/law"
-            className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-300 sm:inline-flex"
-          >
-            Law search
-          </Link>
-          <Link
-            href="/start"
-            className="inline-flex items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 hover:bg-slate-800"
-          >
-            Start check
-          </Link>
-        </div>
-      </header>
+        <Link
+          href={start}
+          className="inline-flex items-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 hover:bg-slate-800"
+        >
+          {common.startCheck}
+        </Link>
+      </SiteHeader>
 
       <section className="vr-shell grid items-center gap-14 pb-24 pt-16 lg:grid-cols-[1.08fr_.92fr] lg:pt-24">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">
             <span className="size-2 rounded-full bg-blue-600" />
-            Korean visa preparation, simplified
+            {m.badge}
           </div>
 
-          <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-7xl">
-            Know exactly what to prepare before immigration day.
+          <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.055em] text-balance text-slate-950 sm:text-6xl lg:text-7xl">
+            {m.title}
           </h1>
 
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-            Answer a few situation-specific questions and get a clean Korean visa document checklist with Korean names, readiness tracking and source status.
-          </p>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">{m.lead}</p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
-              href="/start"
+              href={start}
               className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-[0_12px_30px_rgba(21,94,239,.2)] hover:-translate-y-0.5 hover:bg-blue-700"
             >
-              Build my checklist
+              {m.primaryCta}
               <span aria-hidden>→</span>
             </Link>
             <a
               href="#how-it-works"
               className="inline-flex items-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 font-semibold text-slate-800 hover:border-slate-400"
             >
-              See how it works
+              {m.secondaryCta}
             </a>
           </div>
 
@@ -79,11 +81,11 @@ export default function Home() {
           <div className="vr-grid vr-glass relative h-full min-h-[520px] rounded-[2rem] border border-white/80 p-5 sm:p-7">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">VisaReady preview</div>
-                <div className="mt-1 text-lg font-semibold">D-2 Extension</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">{m.previewEyebrow}</div>
+                <div className="mt-1 text-lg font-semibold">{m.previewFlow}</div>
               </div>
               <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                71% ready
+                {m.previewReady}
               </span>
             </div>
 
@@ -95,9 +97,9 @@ export default function Home() {
               <div className="vr-doc absolute left-0 top-12 w-[74%] -rotate-3 rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,.12)]">
                 <div className="flex items-start justify-between gap-5">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Document</div>
-                    <h2 className="mt-2 text-xl font-semibold">Certificate of Enrollment</h2>
-                    <p className="mt-1 font-medium text-slate-600">재학증명서</p>
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{m.previewDocument}</div>
+                    <h2 className="mt-2 text-xl font-semibold">{m.previewDocumentName}</h2>
+                    <p lang="ko" className="mt-1 font-medium text-slate-600">재학증명서</p>
                   </div>
                   <span className="grid size-10 place-items-center rounded-full bg-emerald-50 font-bold text-emerald-700">✓</span>
                 </div>
@@ -106,25 +108,25 @@ export default function Home() {
                   <div className="h-2 w-1/2 rounded-full bg-slate-100" />
                   <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500">
                     <span className="size-2 rounded-full bg-amber-500" />
-                    Official-source verification pending
+                    {m.previewPending}
                   </div>
                 </div>
               </div>
 
               <div className="vr-doc absolute bottom-1 right-0 w-[68%] rotate-3 rounded-[1.6rem] border border-blue-100 bg-[#f7f9ff] p-5 shadow-[0_18px_50px_rgba(15,23,42,.10)]">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">Checklist item</div>
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">{m.previewItem}</div>
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <div>
-                    <div className="font-semibold">Proof of Residence</div>
-                    <div className="mt-1 text-sm text-slate-500">체류지 입증서류</div>
+                    <div className="font-semibold">{m.previewItemName}</div>
+                    <div lang="ko" className="mt-1 text-sm text-slate-500">체류지 입증서류</div>
                   </div>
                   <span className="grid size-9 place-items-center rounded-full border border-slate-300 bg-white text-slate-400">○</span>
                 </div>
               </div>
 
               <div className="absolute right-4 top-5 rounded-2xl border border-slate-200 bg-slate-950 px-4 py-3 text-white shadow-lg">
-                <div className="text-[11px] uppercase tracking-[.16em] text-slate-400">Every document</div>
-                <div className="mt-1 text-sm font-medium">한국어 + English</div>
+                <div className="text-[11px] uppercase tracking-[.16em] text-slate-400">{m.previewEvery}</div>
+                <div className="mt-1 text-sm font-medium">{m.previewLanguages}</div>
               </div>
             </div>
           </div>
@@ -134,18 +136,12 @@ export default function Home() {
       <section id="how-it-works" className="border-y border-slate-200 bg-white">
         <div className="vr-shell py-20">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-blue-600">A calmer immigration workflow</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">
-              One decision at a time. One checklist at the end.
-            </h2>
+            <p className="text-sm font-semibold text-blue-600">{m.howEyebrow}</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">{m.howTitle}</h2>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {[
-              ["01", "Choose the action", "Tell us whether you are extending or changing your current visa status."],
-              ["02", "Answer only what matters", "The questionnaire asks context-specific questions that can change your document list."],
-              ["03", "Prepare with confidence", "Track every required item, see its Korean name, and know which entries still need verification."],
-            ].map(([number, title, description]) => (
+            {steps.map(([number, title, description]) => (
               <article key={number} className="group rounded-[1.5rem] border border-slate-200 bg-white p-6 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-blue-600">{number}</span>
@@ -163,16 +159,12 @@ export default function Home() {
         <div className="rounded-[2rem] bg-slate-950 px-6 py-10 text-white sm:px-10 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="text-sm font-medium text-blue-300">Built for international residents in Korea</div>
-              <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-                Stop piecing your application together from scattered tabs and screenshots.
-              </h2>
-              <p className="mt-4 max-w-2xl leading-7 text-slate-300">
-                VisaReady KR organizes preparation into a deterministic checklist. It is not a government service, law firm, or approval guarantee.
-              </p>
+              <div className="text-sm font-medium text-blue-300">{m.ctaEyebrow}</div>
+              <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{m.ctaTitle}</h2>
+              <p className="mt-4 max-w-2xl leading-7 text-slate-300">{m.ctaBody}</p>
             </div>
-            <Link href="/start" className="inline-flex rounded-2xl bg-white px-5 py-3.5 font-semibold text-slate-950 hover:-translate-y-0.5">
-              Start your checklist
+            <Link href={start} className="inline-flex rounded-2xl bg-white px-5 py-3.5 font-semibold text-slate-950 hover:-translate-y-0.5">
+              {m.ctaButton}
             </Link>
           </div>
         </div>

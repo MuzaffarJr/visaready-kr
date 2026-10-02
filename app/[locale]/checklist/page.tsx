@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { SiteHeader } from "../../_components/site-header";
+import { useLocale } from "../../_components/use-locale";
 import { currentRuleSet } from "@/lib/checklist-service";
 import { loadChecklist, sameAnswers, saveChecklist } from "@/lib/checklist-store";
+import { feeLabel, flowText, format, localePath, requirementText } from "@/lib/i18n";
 import {
   compareWithLatest,
   findFlow,
@@ -48,6 +51,8 @@ function load(params: URLSearchParams): Loaded {
 }
 
 function Checklist({ params }: { params: URLSearchParams }) {
+  const { locale, m: messages } = useLocale();
+  const m = messages.checklist;
   const [loaded, setLoaded] = useState<Loaded>(() => load(params));
   const flow = loaded.kind === "unavailable" ? undefined : findFlow(loaded.flowId);
   const snapshot = loaded.kind === "ok" ? loaded.snapshot : undefined;
@@ -82,13 +87,12 @@ function Checklist({ params }: { params: URLSearchParams }) {
   if (!flow || !snapshot) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-16">
-        <p>
-          {loaded.kind === "invalid-answers"
-            ? "Some answers are missing or invalid, so the checklist could not be generated."
-            : "Checklist could not be generated."}
-        </p>
-        <Link href={flow ? "/questionnaire?flow=" + flow.id : "/start"} className="mt-4 inline-flex text-blue-600">
-          {flow ? "Answer the questions again" : "Start again"}
+        <p>{loaded.kind === "invalid-answers" ? m.invalidAnswers : m.failed}</p>
+        <Link
+          href={localePath(locale, flow ? "/questionnaire?flow=" + flow.id : "/start")}
+          className="mt-4 inline-flex text-blue-600"
+        >
+          {flow ? m.answerAgain : m.startAgain}
         </Link>
       </main>
     );
@@ -96,27 +100,26 @@ function Checklist({ params }: { params: URLSearchParams }) {
 
   return (
     <main className="min-h-screen pb-20">
-      <header className="vr-shell flex items-center justify-between py-5">
-        <Link href="/" className="flex items-center gap-3 font-semibold">
-          <span className="grid size-9 place-items-center rounded-xl bg-slate-950 text-sm font-bold text-white">V</span>
-          VisaReady KR
+      <SiteHeader locale={locale}>
+        <Link
+          href={localePath(locale, "/start")}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300"
+        >
+          {messages.common.newChecklist}
         </Link>
-        <Link href="/start" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300">
-          New checklist
-        </Link>
-      </header>
+      </SiteHeader>
 
       <section className="vr-shell mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <div className="rounded-[1.6rem] bg-slate-950 p-6 text-white shadow-[0_20px_60px_rgba(15,23,42,.14)]">
-            <div className="text-xs font-semibold uppercase tracking-[.16em] text-blue-300">Application</div>
-            <h1 className="mt-2 text-2xl font-semibold">{flow.label}</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-300">Your current preparation status based on the checklist below.</p>
+            <div className="text-xs font-semibold uppercase tracking-[.16em] text-blue-300">{m.application}</div>
+            <h1 className="mt-2 text-2xl font-semibold">{flowText(locale, flow).label}</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{m.statusLead}</p>
 
             <div className="mt-8 flex items-end justify-between">
               <div>
                 <div className="text-5xl font-semibold tracking-[-0.05em]">{percent}%</div>
-                <div className="mt-2 text-sm text-slate-400">{complete} of {items.length} ready</div>
+                <div className="mt-2 text-sm text-slate-400">{format(m.progress, { complete, total: items.length })}</div>
               </div>
               <div className="grid size-12 place-items-center rounded-full bg-white/10 text-lg">✓</div>
             </div>
@@ -126,7 +129,7 @@ function Checklist({ params }: { params: URLSearchParams }) {
             </div>
 
             <div className="mt-8 border-t border-white/10 pt-5 text-xs leading-5 text-slate-400">
-              Completion is a preparation indicator, not a visa approval prediction. Progress is saved in this browser only.
+              {m.progressNote}
             </div>
           </div>
         </aside>
@@ -134,31 +137,31 @@ function Checklist({ params }: { params: URLSearchParams }) {
         <div>
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-blue-600">Personalized document list</p>
-              <h2 className="mt-1 text-3xl font-semibold tracking-[-0.035em] text-slate-950">Prepare these documents</h2>
+              <p className="text-sm font-semibold text-blue-600">{m.eyebrow}</p>
+              <h2 className="mt-1 text-3xl font-semibold tracking-[-0.035em] text-slate-950">{m.title}</h2>
             </div>
             <div className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500">
-              Rules v{snapshot.ruleSetVersion} ·{" "}
-              {snapshot.verifiedAt ? "verified " + snapshot.verifiedAt : "provisional, source verification pending"}
+              {format(m.rulesVersion, { version: snapshot.ruleSetVersion })} ·{" "}
+              {snapshot.verifiedAt ? format(m.verifiedOn, { date: snapshot.verifiedAt }) : m.provisionalPending}
             </div>
           </div>
 
           {drift.status === "outdated" && (
             <div role="status" className="mb-5 rounded-[1.4rem] border border-blue-200 bg-blue-50 p-5 text-sm leading-6 text-blue-950">
-              <strong>Rules updated to v{drift.latestVersion}.</strong>{" "}
-              Your checklist still follows v{snapshot.ruleSetVersion}, the version it was created with.{" "}
+              <strong>{format(m.updatedTitle, { version: drift.latestVersion })}</strong>{" "}
+              {format(m.updatedBody, { version: snapshot.ruleSetVersion })}{" "}
               {drift.unansweredQuestions.length > 0 ? (
                 <>
-                  The new rules ask {drift.unansweredQuestions.length} new question(s).{" "}
-                  <Link className="font-semibold underline" href={"/questionnaire?flow=" + snapshot.flowId}>
-                    Answer them to update
+                  {format(m.newQuestions, { count: drift.unansweredQuestions.length })}{" "}
+                  <Link className="font-semibold underline" href={localePath(locale, "/questionnaire?flow=" + snapshot.flowId)}>
+                    {m.answerToUpdate}
                   </Link>
                 </>
               ) : (
                 <>
-                  {drift.added.length} item(s) added, {drift.removed.length} removed.{" "}
+                  {format(m.itemChanges, { added: drift.added.length, removed: drift.removed.length })}{" "}
                   <button type="button" onClick={acceptUpdate} className="font-semibold underline">
-                    Update my checklist
+                    {m.acceptUpdate}
                   </button>
                 </>
               )}
@@ -168,6 +171,7 @@ function Checklist({ params }: { params: URLSearchParams }) {
           <div className="space-y-3">
             {items.map((item, index) => {
               const isReady = !!ready[item.requirementId];
+              const text = requirementText(locale, snapshot, item);
               return (
                 <article
                   key={item.requirementId}
@@ -179,7 +183,7 @@ function Checklist({ params }: { params: URLSearchParams }) {
                   <div className="flex items-start gap-4">
                     <button
                       type="button"
-                      aria-label={"Mark " + item.englishName + " ready"}
+                      aria-label={format(m.markReady, { name: text.name })}
                       aria-pressed={isReady}
                       onClick={() => toggle(item.requirementId)}
                       className={
@@ -194,14 +198,14 @@ function Checklist({ params }: { params: URLSearchParams }) {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold tracking-tight text-slate-950">{item.englishName}</h3>
+                        <h3 className="text-lg font-semibold tracking-tight text-slate-950">{text.name}</h3>
                         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                          {item.kind}
+                          {item.kind === "required" ? m.kindRequired : m.kindConditional}
                         </span>
                       </div>
 
-                      <div className="mt-1 text-sm font-semibold text-slate-700">{item.koreanName}</div>
-                      <p className="mt-3 text-sm leading-6 text-slate-600">{item.note}</p>
+                      <div lang="ko" className="mt-1 text-sm font-semibold text-slate-700">{item.koreanName}</div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">{text.note}</p>
 
                       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium">
                         {item.sources.length > 0 ? (
@@ -220,11 +224,11 @@ function Checklist({ params }: { params: URLSearchParams }) {
                         ) : (
                           <span className="inline-flex items-center gap-2 text-amber-700">
                             <span className="size-2 rounded-full bg-amber-500" />
-                            Official source not yet verified
+                            {m.sourcePending}
                           </span>
                         )}
                         <span className={isReady ? "text-emerald-700" : "text-slate-400"}>
-                          {isReady ? "Marked ready" : "Not marked ready"}
+                          {isReady ? m.markedReady : m.notMarkedReady}
                         </span>
                       </div>
                     </div>
@@ -236,11 +240,11 @@ function Checklist({ params }: { params: URLSearchParams }) {
 
           {snapshot.fees.length > 0 && (
             <section className="mt-6 rounded-[1.4rem] border border-slate-200 bg-white p-5">
-              <h3 className="font-semibold text-slate-950">Fees</h3>
+              <h3 className="font-semibold text-slate-950">{m.fees}</h3>
               <ul className="mt-3 space-y-2 text-sm text-slate-700">
                 {snapshot.fees.map((fee) => (
                   <li key={fee.id} className="flex justify-between gap-4">
-                    <span>{fee.label}</span>
+                    <span>{feeLabel(locale, snapshot, fee)}</span>
                     <span className="font-semibold">₩{fee.amountKrw.toLocaleString("en-US")}</span>
                   </li>
                 ))}
@@ -250,7 +254,7 @@ function Checklist({ params }: { params: URLSearchParams }) {
 
           {snapshot.provisional && (
             <aside className="mt-6 rounded-[1.4rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-              <strong>Provisional checklist:</strong> these requirements come from a draft rule set. They must not be treated as an official filing checklist until every rule is mapped to a verified Korean immigration source.
+              <strong>{m.provisionalTitle}</strong> {m.provisionalBody}
             </aside>
           )}
         </div>

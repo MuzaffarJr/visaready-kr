@@ -6,8 +6,8 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    // Domain modules (rules, law corpus) must stay framework-free.
-    files: ["lib/rules/**/*.ts", "lib/law/**/*.ts"],
+    // Domain modules (rules, law corpus, i18n catalogues) must stay framework-free.
+    files: ["lib/rules/**/*.ts", "lib/law/**/*.ts", "lib/i18n/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
